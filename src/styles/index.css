@@ -1,12 +1,7 @@
+.bg-custom-dark {
+    background-color: rgb(52, 58, 64);
+}
 
-/* 
-
-    You can write your own styles here...
-    
-    
-    ...Or you can use the import command to include 
-    other sylesheets into your bunde as well, e.j:
-    
-    import 'relative/path/to/stylesheet.scss';
-
-*/
+.bg-custom-dark:hover {
+    background-color: rgba(108, 117, 125, 0.8);
+}
