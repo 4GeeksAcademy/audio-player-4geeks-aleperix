@@ -5,11 +5,13 @@ const MusicPlayer = () => {
     const [sounds,setSounds] = useState([]) //Estado donde se guardarán las canciones de la API en formato JSON
     const [currentSong,setCurrentSong] = useState([]) //Estado donde se guardará la canción actual
     const [soundStatus,setSoundStatus] = useState("play") //Estado que guardará el ícono de Play/Pause que se muestra en el momento
-    const [isActiveLi,setIsActiveLi] = useState("") //Estado que guardará que item de la lista es el seleccionado
+    const [isActiveLi,setIsActiveLi] = useState(-1) //Estado que guardará que item de la lista es el seleccionado
+    const [volumeValue,setVolumeValue] = useState("50") //Estado que guardará el valor del volumen del reproductor
 
-    const myAudio = useRef(null);
+    const myAudio = useRef("");
 
     let soundsURL = "https://assets.breatheco.de/apis/sound/" //Pasamos la URL de la API
+    let defaultAudioSrc = myAudio.current.src
 
     /*Función que llama a  una API Rest para obtener las canciones 
       y las establece en el estado "sounds"*/
@@ -21,6 +23,7 @@ const MusicPlayer = () => {
             }) //promesa 1
             .then((data) => setSounds(data)) //Establecemos los datos en nuestro estado
             .catch((err) => console.log(err))
+        myAudio.current.volume = "0.50"
     }
 
     /*Función que cambia la canción actual dependiendo de la URL que se le pase
@@ -37,12 +40,14 @@ const MusicPlayer = () => {
     /*Función que cambia hacia la canción anterior tomando como valor  el índice
       de la canción actual y restándole -1*/
     function previousSong() {
-        if (currentSong[0] === 0) {
-            toggleAudio(sounds.length-1, soundsURL+sounds[sounds.length-1].url, sounds[sounds.length-1].name)
-            document.getElementsByClassName('list-group-item')[sounds.length-1].scrollIntoView()
-        }else{
-            toggleAudio(currentSong[0]-1, soundsURL+sounds[currentSong[0]-1].url, sounds[currentSong[0]-1].name)
-            document.getElementsByClassName('list-group-item')[currentSong[0]-1].scrollIntoView()
+        if (myAudio.current.src != defaultAudioSrc) {
+            if (currentSong[0] === 0) {
+                toggleAudio(sounds.length-1, soundsURL+sounds[sounds.length-1].url, sounds[sounds.length-1].name)
+                document.getElementsByClassName('list-group-item')[sounds.length-1].scrollIntoView()
+            }else{
+                toggleAudio(currentSong[0]-1, soundsURL+sounds[currentSong[0]-1].url, sounds[currentSong[0]-1].name)
+                document.getElementsByClassName('list-group-item')[currentSong[0]-1].scrollIntoView()
+            }
         }
     }
 
@@ -50,12 +55,14 @@ const MusicPlayer = () => {
       de la canción actual y sumándole +1, además, si detecta que la canción
       actual es la última, vuelve hacia la primer canción de la lista*/
     function nextSong() {
-        if (currentSong[0] === sounds.length-1) {
-            toggleAudio(0, soundsURL+sounds[0].url, sounds[0].name)
-            document.getElementsByClassName('list-group-item')[0].scrollIntoView()
-        }else{
-            toggleAudio(currentSong[0]+1, soundsURL+sounds[currentSong[0]+1].url, sounds[currentSong[0]+1].name)
-            document.getElementsByClassName('list-group-item')[currentSong[0]+1].scrollIntoView()
+        if (myAudio.current.src != defaultAudioSrc) {
+            if (currentSong[0] === sounds.length-1) {
+                toggleAudio(0, soundsURL+sounds[0].url, sounds[0].name)
+                document.getElementsByClassName('list-group-item')[0].scrollIntoView()
+            }else{
+                toggleAudio(currentSong[0]+1, soundsURL+sounds[currentSong[0]+1].url, sounds[currentSong[0]+1].name)
+                document.getElementsByClassName('list-group-item')[currentSong[0]+1].scrollIntoView()
+            }
         }
     }
 
@@ -63,15 +70,26 @@ const MusicPlayer = () => {
       y dependiendo de ellos reproduce o pausa la canción actual y además vuelve
       a cambiar el estado del botón*/
     function playPauseSong(opt) {
-        if (opt === "pause"){
-            setSoundStatus("play")
-            myAudio.current.pause()
-        }else if(opt === "play"){
-            setSoundStatus("pause")
-            myAudio.current.play()
+        if (myAudio.current.src != defaultAudioSrc) {
+            if (opt === "pause"){
+                setSoundStatus("play")
+                myAudio.current.pause()
+            }else if(opt === "play"){
+                setSoundStatus("pause")
+                myAudio.current.play()
+            } 
         }
     }
     
+    const volumeChange = e => {
+        setVolumeValue(e.target.value)
+        if (e.target.value == 100) {
+            myAudio.current.volume = 1
+        }else{
+            myAudio.current.volume = "0."+e.target.value
+        }
+    }
+
     /*Utilizamos el hook useEffect para generar un evento onLoad y llamamos a la función
       de la API*/
     useEffect(()=>{
@@ -94,6 +112,11 @@ const MusicPlayer = () => {
                     <button type="button" className="btn btn-light mx-1" onClick={() => previousSong()}><i className="fas fa-step-backward"></i></button>
                     <button type="button" onClick={() => playPauseSong(soundStatus)} className="btn btn-light mx-1"><i className={soundStatus === "pause" ? "fas fa-play" : "fas fa-pause"}></i></button>
                     <button type="button" className="btn btn-light mx-1" onClick={() => nextSong()}><i className="fas fa-step-forward"></i></button>
+                </div>
+                {/*Slider con el cual se cambiará el volumen del reproductor*/}
+                <div className="playervolume w-25 text-center">
+                    <label htmlFor="playervolumerange" className="form-label text-white">Volumen: {volumeValue}%</label>
+                    <input type="range" className="form-range" min="0" max="100" step="10" onChange={volumeChange} id="playervolumerange"></input>
                 </div>
                 <span className="text-white mx-4">Reproduciendo: {currentSong[1]}</span>
             </div>
