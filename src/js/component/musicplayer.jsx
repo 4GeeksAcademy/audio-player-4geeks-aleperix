@@ -10,17 +10,20 @@ const MusicPlayer = () => {
 
     const myAudio = useRef("");
 
-    let soundsURL = "https://assets.breatheco.de/apis/sound/" //Pasamos la URL de la API
+    let soundsURL = "https://playground.4geeks.com" //Pasamos la URL de la API
 
     /*Función que llama a  una API Rest para obtener las canciones 
       y las establece en el estado "sounds"*/
     function getSounds() {
-        fetch(soundsURL+'songs') //Llamamos al método fetch para obtener datos de la API
+        fetch(soundsURL+'/sound/songs') //Llamamos al método fetch para obtener datos de la API
             .then((response) => {
                 console.log(response.status);
                 return response.json()
             }) //promesa 1
-            .then((data) => setSounds(data)) //Establecemos los datos en nuestro estado
+            .then((data) => {
+                console.log(data)
+                setSounds(data.songs);
+            }) //Establecemos los datos en nuestro estado
             .catch((err) => console.log(err))
         myAudio.current.volume = "0.50"
     }
